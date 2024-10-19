@@ -1,5 +1,5 @@
 
-from PyQt5.QtWidgets import QMainWindow, QApplication,QListWidget,QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QApplication,QListWidget,QFileDialog,QScrollBar
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import QEvent,Qt
 from PyQt5.QtGui import QIcon
@@ -65,12 +65,14 @@ class Main(QMainWindow):
         
         ## New window  : AddApp
         self.add_new = AddApp(self,assets("add_ui.ui"))
-        self.add_new.addBtn.clicked.connect(self.add_things)
+        self.add_new.addBtn.clicked.connect(lambda : self.add_things(lists=True))
         self.add_new.refText.installEventFilter(self)
         
         
         ## New Window : ListView 
         self.list_view = ListView(self,assets("list_ui.ui"))
+        scroll_bar = QScrollBar(self)
+        self.list_view.topic_list.setHorizontalScrollBar(scroll_bar)
         
         ## Three lists connecting to their functions
         for (k,v) in self.lists_objs.items():
@@ -131,14 +133,17 @@ class Main(QMainWindow):
         self.add_new.refText.setText(value)
         
     
-    def add_things(self):
+    def add_things(self,lists=True):
         
         if self.add_new.appName != "" and self.add_new.refText !="":
             if self.flag in ["desktop_apps","web_apps"]:
                 self.add_helper(split=False)
-                            
+                        
             if self.flag == "lists":
-                self.add_helper(split=True)
+                if lists==True:
+                  self.add_helper(split=True)
+                else:
+                    pass
     
     def add_helper(self,split=True):
         
@@ -154,7 +159,7 @@ class Main(QMainWindow):
     def eventFilter(self,obj,event):
         if event.type() == QEvent.KeyPress and obj is self.add_new.refText:
             if event.key() == Qt.Key_Return:
-                self.add_things()
+                self.add_things(lists=False)
         
         if event.type() == QEvent.KeyPress and obj in self.lists_objs.keys():
             if event.key() == Qt.Key_Delete:
@@ -173,7 +178,11 @@ class Main(QMainWindow):
     
     
     def list_open(self,text,ref):
+        
+        
+        
         self.list_view.listItem.setText(text)
+        self.list_view.topic_list.clear()
         self.list_view.topic_list.addItems(ref)
         self.list_view.show()
     
